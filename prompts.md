@@ -29,4 +29,3 @@ Copy this template for every significant AI interaction. Fill it in and add it a
 ---
 
 ## Week 1
-
