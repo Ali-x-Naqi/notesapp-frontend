@@ -1,30 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NotesList } from '@/components';
 import type { Note } from '@/types';
 
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
-vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
-
 const mockNotes: Note[] = [
   {
-    id: '1',
+    id: 1,
+    user: null,
     title: 'First Note',
     body: 'First note body text',
-    authorId: 'user1',
-    createdAt: '2026-06-01T00:00:00.000Z',
-    updatedAt: '2026-06-01T00:00:00.000Z',
+    created_at: '2026-06-01T00:00:00.000Z',
+    updated_at: '2026-06-01T00:00:00.000Z',
   },
   {
-    id: '2',
+    id: 2,
+    user: null,
     title: 'Second Note',
     body: 'Second note body text',
-    authorId: 'user1',
-    createdAt: '2026-06-02T00:00:00.000Z',
-    updatedAt: '2026-06-02T00:00:00.000Z',
+    created_at: '2026-06-02T00:00:00.000Z',
+    updated_at: '2026-06-02T00:00:00.000Z',
   },
 ];
 
@@ -33,43 +28,51 @@ describe('NotesList', () => {
     vi.clearAllMocks();
   });
 
-  it('shows loading state on initial render', () => {
-    mockFetch.mockReturnValueOnce(new Promise(() => {}));
-    render(<NotesList />);
+  it('shows loading state when loading is true', () => {
+    render(
+      <NotesList notes={[]} loading={true} error={null} onDelete={vi.fn()} />
+    );
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
   });
 
-  it('renders notes after fetch resolves successfully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ data: mockNotes }),
-    });
-    render(<NotesList />);
-    expect(await screen.findByText('First Note')).toBeInTheDocument();
+  it('renders notes when provided', () => {
+    render(
+      <NotesList
+        notes={mockNotes}
+        loading={false}
+        error={null}
+        onDelete={vi.fn()}
+      />
+    );
+    expect(screen.getByText('First Note')).toBeInTheDocument();
     expect(screen.getByText('Second Note')).toBeInTheDocument();
   });
 
-  it('shows error message when fetch fails', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false });
-    render(<NotesList />);
-    expect(await screen.findByText(/could not load/i)).toBeInTheDocument();
+  it('shows error message when error is set', () => {
+    render(
+      <NotesList
+        notes={[]}
+        loading={false}
+        error="Could not load notes. Please refresh."
+        onDelete={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/could not load/i)).toBeInTheDocument();
   });
 
-  it('removes a note from the list when Delete is clicked', async () => {
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ data: mockNotes }),
-      })
-      .mockResolvedValueOnce({ ok: true });
-    render(<NotesList />);
-    expect(await screen.findByText('First Note')).toBeInTheDocument();
+  it('calls onDelete with the note id when Delete is clicked', async () => {
+    const onDelete = vi.fn();
+    render(
+      <NotesList
+        notes={mockNotes}
+        loading={false}
+        error={null}
+        onDelete={onDelete}
+      />
+    );
     await userEvent.click(
       screen.getAllByRole('button', { name: /delete/i })[0]
     );
-    await waitFor(() => {
-      expect(screen.queryByText('First Note')).not.toBeInTheDocument();
-    });
-    expect(screen.getByText('Second Note')).toBeInTheDocument();
+    expect(onDelete).toHaveBeenCalledWith(1);
   });
 });

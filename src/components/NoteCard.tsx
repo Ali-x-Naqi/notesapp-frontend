@@ -2,11 +2,11 @@ import type { Note } from '@/types';
 
 interface NoteCardProps {
   note: Note;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export function NoteCard({ note, onDelete }: NoteCardProps) {
-  const date = new Date(note.createdAt).toLocaleDateString();
+  const date = new Date(note.created_at).toLocaleDateString();
 
   return (
     <article className="rounded-lg border border-gray-800 bg-gray-900 p-4">

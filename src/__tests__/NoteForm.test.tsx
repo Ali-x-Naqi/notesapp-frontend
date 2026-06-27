@@ -3,10 +3,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NoteForm } from '@/components';
 
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({
+    accessToken: 'test-token',
+    isAuthenticated: true,
+    username: 'testuser',
+    login: vi.fn(),
+    logout: vi.fn(),
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
-
-vi.spyOn(Storage.prototype, 'getItem').mockReturnValue(null);
 
 describe('NoteForm', () => {
   beforeEach(() => {

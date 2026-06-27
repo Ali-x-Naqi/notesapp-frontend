@@ -1,10 +1,10 @@
 export interface Note {
-  id: string;
+  id: number;
+  user: number | null;
   title: string;
   body: string;
-  authorId: string;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface NoteFormData {
