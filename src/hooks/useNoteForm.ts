@@ -1,9 +1,11 @@
 'use client';
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import type { NoteFormData, NoteFormErrors } from '@/types';
 import { validateNoteForm, hasErrors } from '@/utils';
 
-export function useNoteForm() {
+export function useNoteForm(onSuccess?: () => void) {
+  const { accessToken } = useAuth();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [errors, setErrors] = useState<NoteFormErrors>({});
@@ -27,20 +29,24 @@ export function useNoteForm() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      const token = localStorage.getItem('token');
       const res = await fetch(`${apiUrl}/api/notes/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify(data),
       });
 
+      if (res.status === 401) {
+        setApiError('Session expired. Please log in again.');
+        return;
+      }
       if (!res.ok) throw new Error('Failed to create note');
 
       setTitle('');
       setBody('');
+      onSuccess?.();
     } catch {
       setApiError('Failed to save note. Please try again.');
     } finally {

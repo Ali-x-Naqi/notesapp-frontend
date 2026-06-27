@@ -1,7 +1,11 @@
 'use client';
 import { useNoteForm } from '@/hooks';
 
-export function NoteForm() {
+interface NoteFormProps {
+  onSuccess?: () => void;
+}
+
+export function NoteForm({ onSuccess }: NoteFormProps = {}) {
   const {
     title,
     setTitle,
@@ -11,10 +15,10 @@ export function NoteForm() {
     isSubmitting,
     apiError,
     handleSubmit,
-  } = useNoteForm();
+  } = useNoteForm(onSuccess);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
       <div>
         <label
           htmlFor="title"
@@ -34,7 +38,6 @@ export function NoteForm() {
           <p className="mt-1 text-sm text-red-400">{errors.title}</p>
         )}
       </div>
-
       <div>
         <label
           htmlFor="body"
@@ -54,9 +57,7 @@ export function NoteForm() {
           <p className="mt-1 text-sm text-red-400">{errors.body}</p>
         )}
       </div>
-
       {apiError && <p className="text-sm text-red-400">{apiError}</p>}
-
       <button
         type="submit"
         disabled={isSubmitting}

@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
-const links = [
+const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/notes', label: 'Notes' },
   { href: '/about', label: 'About' },
@@ -10,6 +11,13 @@ const links = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { isAuthenticated, username, logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    router.push('/login');
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-gray-800 bg-gray-950/90 backdrop-blur">
@@ -17,8 +25,8 @@ export function Navbar() {
         <Link href="/" className="font-semibold text-white">
           NotesApp
         </Link>
-        <ul className="flex gap-6">
-          {links.map(({ href, label }) => (
+        <ul className="flex items-center gap-6">
+          {navLinks.map(({ href, label }) => (
             <li key={href}>
               <Link
                 href={href}
@@ -32,6 +40,32 @@ export function Navbar() {
               </Link>
             </li>
           ))}
+          {isAuthenticated ? (
+            <>
+              <li className="text-sm text-gray-400">{username}</li>
+              <li>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-gray-400 transition-colors hover:text-white"
+                >
+                  Log out
+                </button>
+              </li>
+            </>
+          ) : (
+            <li>
+              <Link
+                href="/login"
+                className={
+                  pathname === '/login'
+                    ? 'text-sm font-medium text-white'
+                    : 'text-sm text-gray-400 transition-colors hover:text-white'
+                }
+              >
+                Log in
+              </Link>
+            </li>
+          )}
         </ul>
       </div>
     </nav>
